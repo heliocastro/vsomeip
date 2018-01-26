@@ -9,8 +9,8 @@
 #include <memory>
 
 #include <boost/asio/ip/address.hpp>
-#include "../../routing/include/event.hpp"
-#include "../../configuration/include/internal.hpp"
+#include <routing/include/event.hpp>
+#include <configuration/include/internal.hpp>
 
 #include <vsomeip/primitive_types.hpp>
 

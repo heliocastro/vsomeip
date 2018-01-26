@@ -14,7 +14,7 @@
 #include "../include/tls_client_endpoint_impl.hpp"
 #include "../../logging/include/logger.hpp"
 #include "../../utility/include/utility.hpp"
-#include "../../configuration/include/internal.hpp"
+#include "configuration/include/internal.hpp"
 
 namespace ip = boost::asio::ip;
 

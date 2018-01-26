@@ -3,11 +3,72 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-cmake_minimum_required (VERSION 2.8.1)
+##############################################################################
+# google test
+
+# check for set environment variable
+if(DEFINED ENV{GTEST_ROOT})
+    message("GTEST_ROOT is set. GTEST_ROOT = $ENV{GTEST_ROOT}")
+else()
+    message("GTEST_ROOT is not defined. For building the tests environment variable
+        GTEST_ROOT have to be defined. Tests can not be built.")
+    # early exit
+    return()  # test can not be build -> make commands build_tests and check are not available
+endif()
+
+# build google test as static library (always) -> therefore deactivate BUILD_SHARED_LIBS in case it is active
+set(BUILD_SHARED_LIBS_AUTOMATIC_OFF 0)
+if("${BUILD_SHARED_LIBS}" STREQUAL "ON")
+    set(BUILD_SHARED_LIBS OFF)
+    set(BUILD_SHARED_LIBS_AUTOMATIC_OFF 1)
+endif()
+add_subdirectory($ENV{GTEST_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/gtest EXCLUDE_FROM_ALL)
+if("${BUILD_SHARED_LIBS_AUTOMATIC_OFF}" STREQUAL "1")
+    set(BUILD_SHARED_LIBS ON)
+    set(BUILD_SHARED_LIBS_AUTOMATIC_OFF 0)
+endif()
+
+##############################################################################
+# build tests
+
+enable_testing()
+set(TESTS_BAT "OFF" CACHE BOOL
+    "Controls whether only BAT tests should be build or not")
+set(TEST_SYMLINK_CONFIG_FILES "OFF" CACHE BOOL
+    "Controls if the json and scripts needed needed to run
+    the tests are copied or symlinked into the build directroy (ignored on Windows)")
+set(TEST_SYMLINK_CONFIG_FILES_RELATIVE "OFF" CACHE BOOL
+    "Controls if the json and scripts needed needed to run the tests are symlinked
+    relatively into the build directroy (ignored on Windows)")
+
+set(TEST_IP_DEFAULT_VALUE "XXX.XXX.XXX.XXX")
+set(TEST_IP_MASTER "${TEST_IP_DEFAULT_VALUE}" CACHE STRING
+    "The IP address of the interface which will act as test master")
+set(TEST_IP_SLAVE "${TEST_IP_DEFAULT_VALUE}" CACHE STRING
+    "The IP address of the interface which will act as test slave")
+
+if((${TEST_IP_MASTER} STREQUAL ${TEST_IP_DEFAULT_VALUE}) OR
+    (${TEST_IP_SLAVE} STREQUAL ${TEST_IP_DEFAULT_VALUE}))
+    message(WARNING "TEST_IP_MASTER and/or TEST_IP_SLAVE isn't set. "
+                    "Only local tests will be runnable "
+                    "Please specify them via for example "
+                    "-DTEST_IP_MASTER=10.0.3.1 -DTEST_IP_SLAVE=10.0.3.125")
+endif()
+
+add_custom_target(build_tests)
+add_dependencies(build_tests vsomeip)
+add_dependencies(build_tests vsomeip-sd)
+
+set(CMAKE_CTEST_COMMAND ctest -V)
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
+
+add_dependencies(check build_tests)
+
+##############################################################################
+# add test directory
 
 # Add the gtest header files to the include files
 include_directories(
-    .
     ${gtest_SOURCE_DIR}/include
 )
 
@@ -21,7 +82,7 @@ set(TEST_LINK_LIBRARIES gtest)
 #                   a dependency to this target
 function(copy_to_builddir SOURCE_PATH DESTINATION_PATH TARGET_TO_DEPEND)
     if(${CMAKE_SYSTEM_NAME} MATCHES "Windows" OR NOT ${TEST_SYMLINK_CONFIG_FILES})
-        ADD_CUSTOM_COMMAND(
+        add_custom_command(
             OUTPUT "${DESTINATION_PATH}"
             COMMAND ${CMAKE_COMMAND} -E copy "${SOURCE_PATH}" "${DESTINATION_PATH}"
             DEPENDS "${SOURCE_PATH}"
@@ -29,7 +90,7 @@ function(copy_to_builddir SOURCE_PATH DESTINATION_PATH TARGET_TO_DEPEND)
         )
     else()
         if(${TEST_SYMLINK_CONFIG_FILES_RELATIVE})
-            ADD_CUSTOM_COMMAND(
+            add_custom_command(
                 OUTPUT "${DESTINATION_PATH}"
                 # Create a relative link
                 COMMAND ln -s -r "${SOURCE_PATH}" "${DESTINATION_PATH}"
@@ -37,7 +98,7 @@ function(copy_to_builddir SOURCE_PATH DESTINATION_PATH TARGET_TO_DEPEND)
                 COMMENT "Symlinking \"${SOURCE_PATH}\" into build directory"
             )
         else()
-            ADD_CUSTOM_COMMAND(
+            add_custom_command(
                 OUTPUT "${DESTINATION_PATH}"
                 # Create an absolute link
                 COMMAND ${CMAKE_COMMAND} -E create_symlink "${SOURCE_PATH}" "${DESTINATION_PATH}"
@@ -49,18 +110,18 @@ function(copy_to_builddir SOURCE_PATH DESTINATION_PATH TARGET_TO_DEPEND)
     # Add a random number to the end of the string to avoid problems with
     # duplicate filenames
     set(FILENAME "")
-    get_filename_component(FILENAME ${SOURCE_PATH} NAME )
+    get_filename_component(FILENAME ${SOURCE_PATH} NAME)
     string(RANDOM LENGTH 4 ALPHABET 0123456789 RANDOMNUMBER)
-    if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-        ADD_CUSTOM_TARGET(copy_${FILENAME}_${RANDOMNUMBER}
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        add_custom_target(copy_${FILENAME}_${RANDOMNUMBER}
             DEPENDS "${DESTINATION_PATH}"
         )
-        ADD_DEPENDENCIES(${TARGET_TO_DEPEND} copy_${FILENAME}_${RANDOMNUMBER})
+        add_dependencies(${TARGET_TO_DEPEND} copy_${FILENAME}_${RANDOMNUMBER})
     else()
-        ADD_CUSTOM_TARGET(symlink_${FILENAME}_${RANDOMNUMBER}
+        add_custom_target(symlink_${FILENAME}_${RANDOMNUMBER}
             DEPENDS "${DESTINATION_PATH}"
         )
-        ADD_DEPENDENCIES(${TARGET_TO_DEPEND} symlink_${FILENAME}_${RANDOMNUMBER})
+        add_dependencies(${TARGET_TO_DEPEND} symlink_${FILENAME}_${RANDOMNUMBER})
     endif()
 endfunction()
 
@@ -77,7 +138,7 @@ if(NOT ${TESTS_BAT})
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
     )
-    
+ 
     # The following will make sure that ${TEST_CONFIGURATION_CONFIG_FILE} is copied
     # from the config folder into the test folder in the builddirectory
     # This makes it possible to call the configuration test within the build directory
@@ -168,14 +229,14 @@ if(NOT ${TESTS_BAT})
     copy_to_builddir(${PROJECT_SOURCE_DIR}/test/application_tests/${TEST_APPLICATION_NO_DISPATCH_CONFIGURATION_FILE_DAEMON}
         ${PROJECT_BINARY_DIR}/test/${TEST_APPLICATION_NO_DISPATCH_CONFIGURATION_FILE_DAEMON}
         ${TEST_APPLICATION}
-    )
+        )
 
     set(TEST_APPLICATION_STARTER ${TEST_APPLICATION}_starter.sh)
     copy_to_builddir(${PROJECT_SOURCE_DIR}/test/application_tests/${TEST_APPLICATION_STARTER}
         ${PROJECT_BINARY_DIR}/test/${TEST_APPLICATION_STARTER}
         ${TEST_APPLICATION}
     )
-    
+ 
     set(TEST_APPLICATION_SINGLE_PROCESS_STARTER ${TEST_APPLICATION}_single_process_starter.sh)
     copy_to_builddir(${PROJECT_SOURCE_DIR}/test/application_tests/${TEST_APPLICATION_SINGLE_PROCESS_STARTER}
         ${PROJECT_BINARY_DIR}/test/${TEST_APPLICATION_SINGLE_PROCESS_STARTER}
@@ -724,7 +785,9 @@ if(NOT ${TESTS_BAT})
     )
 
     # Copy bashscript to start client into $BUILDDIR/test
-    set(TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_EXTERNAL_START_SCRIPT ${TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_EXTERNAL}_start.sh)
+    set(TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_EXTERNAL_START_SCRIPT
+        ${TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_EXTERNAL}_start.sh
+        )
     copy_to_builddir(
         ${PROJECT_SOURCE_DIR}/test/payload_tests/${TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_EXTERNAL_START_SCRIPT}
         ${PROJECT_BINARY_DIR}/test/${TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_EXTERNAL_START_SCRIPT}
@@ -734,7 +797,8 @@ if(NOT ${TESTS_BAT})
     set(TEST_EXTERNAL_LOCAL_PAYLOAD_SERVICE_CLIENT_EXTERNAL external_local_payload_test_service_client_external)
 
     # Copy bashscript to start service into $BUILDDIR/test
-    set(TEST_EXTERNAL_LOCAL_PAYLOAD_SERVICE_CLIENTT_EXTERNAL_START_SCRIPT ${TEST_EXTERNAL_LOCAL_PAYLOAD_SERVICE_CLIENT_EXTERNAL}_start.sh)
+    set(TEST_EXTERNAL_LOCAL_PAYLOAD_SERVICE_CLIENTT_EXTERNAL_START_SCRIPT
+        ${TEST_EXTERNAL_LOCAL_PAYLOAD_SERVICE_CLIENT_EXTERNAL}_start.sh)
     copy_to_builddir(
         ${PROJECT_SOURCE_DIR}/test/payload_tests/${TEST_EXTERNAL_LOCAL_PAYLOAD_SERVICE_CLIENTT_EXTERNAL_START_SCRIPT}
         ${PROJECT_BINARY_DIR}/test/${TEST_EXTERNAL_LOCAL_PAYLOAD_SERVICE_CLIENTT_EXTERNAL_START_SCRIPT}
@@ -742,7 +806,8 @@ if(NOT ${TESTS_BAT})
     )
 
     # Copy bashscript to start client and server $BUILDDIR/test
-    set(TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_EXTERNAL_STARTER ${TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_EXTERNAL_NAME}_starter.sh)
+    set(TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_EXTERNAL_STARTER
+        ${TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_EXTERNAL_NAME}_starter.sh)
     copy_to_builddir(${PROJECT_SOURCE_DIR}/test/payload_tests/${TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_EXTERNAL_STARTER}
         ${PROJECT_BINARY_DIR}/test/${TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_EXTERNAL_STARTER}
         ${TEST_PAYLOAD_CLIENT}
@@ -750,9 +815,12 @@ if(NOT ${TESTS_BAT})
 
     ##############################################################################
     # Copy bashscript to start client and server $BUILDDIR/test
-    set(TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_LOCAL_AND_EXTERNAL_NAME external_local_payload_test_client_local_and_external)
-    set(TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_LOCAL_AND_EXTERNAL_STARTER ${TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_LOCAL_AND_EXTERNAL_NAME}_starter.sh)
-    copy_to_builddir(${PROJECT_SOURCE_DIR}/test/payload_tests/${TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_LOCAL_AND_EXTERNAL_STARTER}
+    set(TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_LOCAL_AND_EXTERNAL_NAME
+        external_local_payload_test_client_local_and_external)
+    set(TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_LOCAL_AND_EXTERNAL_STARTER
+        ${TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_LOCAL_AND_EXTERNAL_NAME}_starter.sh)
+    copy_to_builddir(
+        ${PROJECT_SOURCE_DIR}/test/payload_tests/${TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_LOCAL_AND_EXTERNAL_STARTER}
         ${PROJECT_BINARY_DIR}/test/${TEST_EXTERNAL_LOCAL_PAYLOAD_CLIENT_LOCAL_AND_EXTERNAL_STARTER}
         ${TEST_PAYLOAD_CLIENT}
     )
@@ -1430,7 +1498,7 @@ if(NOT ${TESTS_BAT})
         ${DL_LIBRARY}
         ${TEST_LINK_LIBRARIES}
     )
-    
+ 
     set(TEST_INITIAL_EVENT_CLIENT ${TEST_INITIAL_EVENT_NAME}_client)
     add_executable(${TEST_INITIAL_EVENT_CLIENT} initial_event_tests/${TEST_INITIAL_EVENT_NAME}_client.cpp)
     target_link_libraries(${TEST_INITIAL_EVENT_CLIENT}

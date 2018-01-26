@@ -18,7 +18,7 @@
 #include <vsomeip/defines.hpp>
 #include <vsomeip/primitive_types.hpp>
 
-#include "internal.hpp"
+#include "configuration/include/internal.hpp"
 #include "trace.hpp"
 
 namespace vsomeip {

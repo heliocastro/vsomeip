@@ -18,8 +18,8 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/steady_timer.hpp>
 
-#include "../../endpoints/include/endpoint_host.hpp"
-#include "../../configuration/include/internal.hpp"
+#include "endpoints/include/endpoint_host.hpp"
+#include "configuration/include/internal.hpp"
 #include "types.hpp"
 
 namespace vsomeip {
