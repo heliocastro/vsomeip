@@ -58,7 +58,7 @@ bool server_endpoint_impl<Protocol>::is_connected() const {
 }
 
 template<typename Protocol>
-void server_endpoint_impl<Protocol>::set_connected(bool _connected) {    (void) _connected;}
+void server_endpoint_impl<Protocol>::set_connected(bool _connected) {    (void) _connected;}
 template<typename Protocol>bool server_endpoint_impl<Protocol>::send(const uint8_t *_data,
         uint32_t _size, bool _flush) {
 #if 0

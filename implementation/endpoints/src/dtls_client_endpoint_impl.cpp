@@ -25,10 +25,10 @@ namespace vsomeip {
 
 dtls_client_endpoint_impl::dtls_client_endpoint_impl(
         std::shared_ptr<endpoint_host> _host, endpoint_type _local,
-        endpoint_type _remote, boost::asio::io_service &_io, bool _confidential,
-        const std::vector<std::uint8_t> &_psk, const std::string &_pskid)
+        endpoint_type _remote, boost::asio::io_service &_io, configuration::endpoint_queue_limit_t _queue_limit,
+        bool _confidential, const std::vector<std::uint8_t> &_psk, const std::string &_pskid)
         : secure_endpoint_base(_confidential, _psk, _pskid),
-          udp_client_endpoint_base_impl(_host, _local, _remote, _io,
+          udp_client_endpoint_base_impl(_host, _local, _remote, _io, _queue_limit,
                                         get_max_dtls_payload_size()),
           recv_buffer_(std::make_shared<message_buffer_t>(get_max_dtls_payload_size(), 0)),
           remote_address_(_remote.address()),

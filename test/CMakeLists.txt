@@ -4,34 +4,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 ##############################################################################
-# google test
 
-# check for set environment variable
-if(DEFINED ENV{GTEST_ROOT})
-    message("GTEST_ROOT is set. GTEST_ROOT = $ENV{GTEST_ROOT}")
-else()
-    message("GTEST_ROOT is not defined. For building the tests environment variable
-        GTEST_ROOT have to be defined. Tests can not be built.")
-    # early exit
-    return()  # test can not be build -> make commands build_tests and check are not available
-endif()
-
-# build google test as static library (always) -> therefore deactivate BUILD_SHARED_LIBS in case it is active
-set(BUILD_SHARED_LIBS_AUTOMATIC_OFF 0)
-if("${BUILD_SHARED_LIBS}" STREQUAL "ON")
-    set(BUILD_SHARED_LIBS OFF)
-    set(BUILD_SHARED_LIBS_AUTOMATIC_OFF 1)
-endif()
-add_subdirectory($ENV{GTEST_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/gtest EXCLUDE_FROM_ALL)
-if("${BUILD_SHARED_LIBS_AUTOMATIC_OFF}" STREQUAL "1")
-    set(BUILD_SHARED_LIBS ON)
-    set(BUILD_SHARED_LIBS_AUTOMATIC_OFF 0)
-endif()
+enable_testing()
 
 ##############################################################################
 # build tests
 
-enable_testing()
 set(TESTS_BAT "OFF" CACHE BOOL
     "Controls whether only BAT tests should be build or not")
 set(TEST_SYMLINK_CONFIG_FILES "OFF" CACHE BOOL
@@ -66,13 +44,6 @@ add_dependencies(check build_tests)
 
 ##############################################################################
 # add test directory
-
-# Add the gtest header files to the include files
-include_directories(
-    ${gtest_SOURCE_DIR}/include
-)
-
-set(TEST_LINK_LIBRARIES gtest)
 
 # Function to copy files into the build directory (or anywhere else)
 # On unixoid systems this function will create symlinks instead
@@ -137,7 +108,7 @@ if(NOT ${TESTS_BAT})
         vsomeip-cfg
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
  
     # The following will make sure that ${TEST_CONFIGURATION_CONFIG_FILE} is copied
@@ -165,7 +136,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     set(TEST_APPLICATION_SINGLE_PROCESS_NAME ${TEST_APPLICATION}_single_process)
@@ -174,7 +145,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     set(TEST_APPLICATION_AVAILABILITY_NAME ${TEST_APPLICATION}_availability)
@@ -183,7 +154,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     set(TEST_APPLICATION_SINGLE_PROCESS_CONFIGURATION_FILE ${TEST_APPLICATION}_single_process.json)
@@ -263,7 +234,7 @@ if(NOT ${TESTS_BAT})
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     set(TEST_MAGIC_COOKIES_SERVICE ${TEST_MAGIC_COOKIES_NAME}_service)
@@ -273,7 +244,7 @@ if(NOT ${TESTS_BAT})
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config file for client into $BUILDDIR/test
@@ -333,7 +304,7 @@ if(NOT ${TESTS_BAT})
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     ##############################################################################
@@ -346,7 +317,7 @@ if(NOT ${TESTS_BAT})
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config file for client into $BUILDDIR/test
@@ -370,7 +341,7 @@ if(NOT ${TESTS_BAT})
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config file for service into $BUILDDIR/test
@@ -407,7 +378,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config file for service into $BUILDDIR/test
@@ -430,7 +401,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config file for client into $BUILDDIR/test
@@ -466,7 +437,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config file for service into $BUILDDIR/test
@@ -524,7 +495,7 @@ else()
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config file for service into $BUILDDIR/test
@@ -547,7 +518,7 @@ else()
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config file for client into $BUILDDIR/test
@@ -588,7 +559,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config file for service into $BUILDDIR/test
@@ -615,7 +586,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config file for client into $BUILDDIR/test
@@ -664,7 +635,7 @@ if (${TEST_SECURITY})
             vsomeip
             ${Boost_LIBRARIES}
             ${DL_LIBRARY}
-            ${TEST_LINK_LIBRARIES}
+            ${GTEST_LIBRARIES}
         )
     
         # Copy config file for service into $BUILDDIR/test
@@ -695,7 +666,7 @@ if (${TEST_SECURITY})
             vsomeip
             ${Boost_LIBRARIES}
             ${DL_LIBRARY}
-            ${TEST_LINK_LIBRARIES}
+            ${GTEST_LIBRARIES}
         )
     endif()
 endif()
@@ -713,7 +684,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config file for service into $BUILDDIR/test
@@ -741,7 +712,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config file for client into $BUILDDIR/test
@@ -899,7 +870,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     set(TEST_BIG_PAYLOAD_CLIENT big_payload_test_client)
@@ -908,7 +879,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config file for client and service into $BUILDDIR/test
@@ -1128,7 +1099,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     set(TEST_CLIENT_ID_UTILITY ${TEST_CLIENT_ID_NAME}_utility)
@@ -1140,7 +1111,7 @@ if(NOT ${TESTS_BAT})
         vsomeip-cfg
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config files for test into $BUILDDIR/test
@@ -1315,7 +1286,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config files for test into $BUILDDIR/test
@@ -1558,7 +1529,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
     # client
     set(TEST_SUBSCRIBE_NOTIFY_ONE_EVENT_TWO_EVENTGROUPS_CLIENT ${TEST_SUBSCRIBE_NOTIFY_ONE_EVENT_TWO_EVENTGROUPS_NAME}_client)
@@ -1568,7 +1539,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     set(TEST_SUBSCRIBE_NOTIFY_ONE_EVENT_TWO_EVENTGROUPS_MASTER_CONFIG_FILE
@@ -1631,7 +1602,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
     
     # Copy config files for test into $BUILDDIR/test
@@ -1712,7 +1683,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config files for test into $BUILDDIR/test
@@ -1747,7 +1718,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     set(TEST_CPU_LOAD_CLIENT_MASTER_CONFIG_FILE ${TEST_CPU_LOAD_NAME}_client_master.json)
@@ -1796,7 +1767,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
  
     set(TEST_INITIAL_EVENT_CLIENT ${TEST_INITIAL_EVENT_NAME}_client)
@@ -1805,7 +1776,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     set(TEST_INITIAL_EVENT_AVAILABILITY_CHECKER ${TEST_INITIAL_EVENT_NAME}_availability_checker)
@@ -1814,7 +1785,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     set(TEST_INITIAL_EVENT_STOP_SERVICE ${TEST_INITIAL_EVENT_NAME}_stop_service)
@@ -1823,7 +1794,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # Copy config files for test into $BUILDDIR/test
@@ -2044,7 +2015,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     set(TEST_OFFER_CLIENT ${TEST_OFFER_NAME}_client)
@@ -2053,7 +2024,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     set(TEST_OFFER_SERVICE_EXTERNAL ${TEST_OFFER_NAME}_service_external)
@@ -2062,7 +2033,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     set(TEST_OFFER_EXTERNAL_SD_MESSAGE_SENDER ${TEST_OFFER_NAME}_external_sd_msg_sender)
@@ -2070,7 +2041,7 @@ if(NOT ${TESTS_BAT})
     target_link_libraries(${TEST_OFFER_EXTERNAL_SD_MESSAGE_SENDER}
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # client and service for offer test big sd msg
@@ -2081,7 +2052,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     set(TEST_OFFER_BIG_CLIENT ${TEST_OFFER_BIG_NAME}_client)
@@ -2090,7 +2061,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # copy starter scripts into builddir
@@ -2199,7 +2170,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     set(TEST_OFFERED_SERVICES_INFO_CLIENT ${TEST_OFFERED_SERVICES_INFO_NAME}_client)
@@ -2208,7 +2179,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     # copy starter scripts into builddir
@@ -2238,7 +2209,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     file(GLOB sd_sources
@@ -2258,7 +2229,7 @@ if(NOT ${TESTS_BAT})
     target_link_libraries(${TEST_PENDING_SUBSCRIPTION_CLIENT}
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
         vsomeip
         vsomeip-sd
     )
@@ -2298,7 +2269,7 @@ if(NOT ${TESTS_BAT})
         vsomeip
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
     )
 
     file(GLOB sd_sources
@@ -2318,7 +2289,7 @@ if(NOT ${TESTS_BAT})
     target_link_libraries(${TEST_MALICIOUS_DATA_CLIENT}
         ${Boost_LIBRARIES}
         ${DL_LIBRARY}
-        ${TEST_LINK_LIBRARIES}
+        ${GTEST_LIBRARIES}
         vsomeip
         vsomeip-sd
     )
@@ -2345,54 +2316,6 @@ if(NOT ${TESTS_BAT})
         ${PROJECT_BINARY_DIR}/test/${TEST_MALICIOUS_DATA_CONFIG_FILE}
         ${TEST_MALICIOUS_DATA_SERVICE}
     )
-endif()
-
-##############################################################################
-# Add for every test a dependency to gtest
-##############################################################################
-
-if(NOT ${TESTS_BAT})
-    add_dependencies(${TEST_CONFIGURATION} gtest)
-    add_dependencies(${TEST_APPLICATION} gtest)
-    add_dependencies(${TEST_APPLICATION_SINGLE_PROCESS_NAME} gtest)
-    add_dependencies(${TEST_APPLICATION_AVAILABILITY_NAME} gtest)
-    add_dependencies(${TEST_MAGIC_COOKIES_CLIENT} gtest)
-    add_dependencies(${TEST_MAGIC_COOKIES_SERVICE} gtest)
-    add_dependencies(${TEST_HEADER_FACTORY} gtest)
-    add_dependencies(${TEST_HEADER_FACTORY_CLIENT} gtest)
-    add_dependencies(${TEST_HEADER_FACTORY_SERVICE} gtest)
-    add_dependencies(${TEST_LOCAL_ROUTING_SERVICE} gtest)
-    add_dependencies(${TEST_LOCAL_ROUTING_CLIENT} gtest)
-    add_dependencies(${TEST_EXTERNAL_LOCAL_ROUTING_SERVICE} gtest)
-    add_dependencies(${TEST_PAYLOAD_SERVICE} gtest)
-    add_dependencies(${TEST_PAYLOAD_CLIENT} gtest)
-    add_dependencies(${TEST_BIG_PAYLOAD_SERVICE} gtest)
-    add_dependencies(${TEST_BIG_PAYLOAD_CLIENT} gtest)
-    add_dependencies(${TEST_CLIENT_ID_SERVICE} gtest)
-    add_dependencies(${TEST_CLIENT_ID_UTILITY} gtest)
-    add_dependencies(${TEST_SUBSCRIBE_NOTIFY_SERVICE} gtest)
-    add_dependencies(${TEST_SUBSCRIBE_NOTIFY_ONE_EVENT_TWO_EVENTGROUPS_SERVICE} gtest)
-    add_dependencies(${TEST_SUBSCRIBE_NOTIFY_ONE_EVENT_TWO_EVENTGROUPS_CLIENT} gtest)
-    add_dependencies(${TEST_SUBSCRIBE_NOTIFY_ONE_SERVICE} gtest)
-    add_dependencies(${TEST_CPU_LOAD_SERVICE} gtest)
-    add_dependencies(${TEST_CPU_LOAD_CLIENT} gtest)
-    add_dependencies(${TEST_INITIAL_EVENT_SERVICE} gtest)
-    add_dependencies(${TEST_INITIAL_EVENT_CLIENT} gtest)
-    add_dependencies(${TEST_INITIAL_EVENT_AVAILABILITY_CHECKER} gtest)
-    add_dependencies(${TEST_INITIAL_EVENT_STOP_SERVICE} gtest)
-    add_dependencies(${TEST_OFFER_SERVICE} gtest)
-    add_dependencies(${TEST_OFFER_CLIENT} gtest)
-    add_dependencies(${TEST_OFFER_SERVICE_EXTERNAL} gtest)
-    add_dependencies(${TEST_OFFER_EXTERNAL_SD_MESSAGE_SENDER} gtest)
-    add_dependencies(${TEST_OFFERED_SERVICES_INFO_CLIENT} gtest)
-    add_dependencies(${TEST_OFFERED_SERVICES_INFO_SERVICE} gtest)
-    add_dependencies(${TEST_PENDING_SUBSCRIPTION_SERVICE} gtest)
-    add_dependencies(${TEST_PENDING_SUBSCRIPTION_CLIENT} gtest)
-    add_dependencies(${TEST_MALICIOUS_DATA_SERVICE} gtest)
-    add_dependencies(${TEST_MALICIOUS_DATA_CLIENT} gtest)
-else()
-    add_dependencies(${TEST_LOCAL_ROUTING_SERVICE} gtest)
-    add_dependencies(${TEST_LOCAL_ROUTING_CLIENT} gtest)
 endif()
 
 ##############################################################################

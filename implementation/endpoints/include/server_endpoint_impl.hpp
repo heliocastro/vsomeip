@@ -39,7 +39,7 @@ public:
     bool is_client() const;
     void restart();
     bool is_connected() const;
-    void set_connected(bool _connected);
+    void set_connected(bool _connected);
     bool send(const uint8_t *_data, uint32_t _size, bool _flush);
 
     virtual void stop();

@@ -31,6 +31,11 @@ if(NOT ARA_SECOC_LIBRARY)
     message(FATAL_ERROR "ara_secoc library not found")
 endif()
 
+find_package(GTest REQUIRED)
+if(GTEST_FOUND)
+    include_directories(${GTEST_INCLUDE_DIRS})
+endif()
+
 # mbedTLS
 find_package(MBEDTLS REQUIRED)
 
@@ -129,5 +134,8 @@ add_subdirectory(daemon)
 endif()
 add_subdirectory(tools)
 add_subdirectory(documentation)
-add_subdirectory(test EXCLUDE_FROM_ALL)
+
+if(GTEST_FOUND)
+    add_subdirectory(test EXCLUDE_FROM_ALL)
+endif()
 add_subdirectory(examples EXCLUDE_FROM_ALL)
