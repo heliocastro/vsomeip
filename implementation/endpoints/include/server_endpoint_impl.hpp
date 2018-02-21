@@ -60,6 +60,8 @@ public:
     virtual bool get_default_target(service_t _service,
             endpoint_type &_target) const = 0;
 
+    virtual client_t get_client(std::shared_ptr<endpoint_definition> /*_endpoint*/);
+
     virtual void print_status() = 0;
 
 protected:

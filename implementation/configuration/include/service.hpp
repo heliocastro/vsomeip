@@ -19,6 +19,7 @@ struct eventgroup;
 struct service {
     service_t service_;
     instance_t instance_;
+    secure_channel_t secure_channel_;
 
     std::string unicast_address_;
 

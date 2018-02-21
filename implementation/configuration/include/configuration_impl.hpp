@@ -77,6 +77,15 @@ public:
     VSOMEIP_EXPORT uint16_t get_unreliable_port(service_t _service,
             instance_t _instance) const;
 
+    VSOMEIP_EXPORT secure_channel_t get_secure_channel_id(service_t _service, instance_t _instance) const;
+    VSOMEIP_EXPORT std::vector<std::tuple<service_t, instance_t, event_t>> get_secured_multicast_events(
+                    uint16_t _port) const;
+    VSOMEIP_EXPORT bool is_multicast_channel(secure_channel_t _channel) const;
+    VSOMEIP_EXPORT bool is_authentic(secure_channel_t _channel) const;
+    VSOMEIP_EXPORT bool is_confidential(secure_channel_t _channel) const;
+    VSOMEIP_EXPORT const std::vector<std::uint8_t> get_psk(secure_channel_t _channel) const;
+    VSOMEIP_EXPORT const std::string get_pskid(secure_channel_t _channel) const;
+
     VSOMEIP_EXPORT bool is_someip(service_t _service, instance_t _instance) const;
 
     VSOMEIP_EXPORT bool get_client_port(service_t _service, instance_t _instance,
@@ -201,6 +210,10 @@ private:
 
     void load_network(const element &_element);
 
+    void load_secure_channels(const element &_element);
+    void load_secure_channel_data(const boost::property_tree::ptree &_tree,
+                                  const std::string &_name);
+
     void load_unicast_address(const element &_element);
     void load_diagnosis_address(const element &_element);
 
@@ -252,6 +265,8 @@ private:
     bool find_port(uint16_t &_port, uint16_t _remote, bool _reliable,
             std::map<bool, std::set<uint16_t> > &_used_client_ports) const;
 
+    std::shared_ptr<const secure_channel> get_secure_channel(secure_channel_t _channel) const;
+
     void set_magic_cookies_unicast_address();
 
     bool is_mandatory(const std::string &_name) const;
@@ -294,6 +309,8 @@ protected:
                 size_t, size_t, std::map<plugin_type_e, std::set<std::string>>>> applications_;
     std::set<client_t> client_identifiers_;
 
+    std::map<secure_channel_t, std::shared_ptr<const secure_channel>> secure_channels_;
+
     std::map<service_t,
         std::map<instance_t,
             std::shared_ptr<service> > > services_;
@@ -315,6 +332,7 @@ protected:
     int32_t sd_cyclic_offer_delay_;
     int32_t sd_request_response_delay_;
     std::uint32_t sd_offer_debounce_time_;
+    secure_channel_t sd_secure_channel_;
 
     std::map<std::string, std::set<uint16_t> > magic_cookies_;
 
@@ -356,6 +374,7 @@ protected:
         ET_SERVICE_DISCOVERY_TTL,
         ET_SERVICE_DISCOVERY_CYCLIC_OFFER_DELAY,
         ET_SERVICE_DISCOVERY_REQUEST_RESPONSE_DELAY,
+        ET_SERVICE_DISCOVERY_SECURE_CHANNEL,
         ET_WATCHDOG_ENABLE,
         ET_WATCHDOG_TIMEOUT,
         ET_WATCHDOG_ALLOWED_MISSING_PONGS,

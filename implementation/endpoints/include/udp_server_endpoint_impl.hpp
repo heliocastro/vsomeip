@@ -12,6 +12,7 @@
 #include <vsomeip/defines.hpp>
 
 #include "server_endpoint_impl.hpp"
+#include "secoc_endpoint_base.hpp"
 #include <atomic>
 
 namespace vsomeip {
@@ -20,7 +21,7 @@ typedef server_endpoint_impl<
             boost::asio::ip::udp_ext
         > udp_server_endpoint_base_impl;
 
-class udp_server_endpoint_impl: public udp_server_endpoint_base_impl {
+class udp_server_endpoint_impl: public udp_server_endpoint_base_impl, public secoc_endpoint_base {
 
 public:
     udp_server_endpoint_impl(std::shared_ptr<endpoint_host> _host,
@@ -34,6 +35,7 @@ public:
 
     void receive();
 
+    bool send(const uint8_t *_data, uint32_t _size, bool _flush);
     bool send_to(const std::shared_ptr<endpoint_definition> _target,
             const byte_t *_data, uint32_t _size, bool _flush);
     void send_queued(const queue_iterator_type _queue_iterator);
@@ -61,8 +63,8 @@ private:
     void set_broadcast();
     bool is_joined(const std::string &_address) const;
     bool is_joined(const std::string &_address, bool* _received) const;
-    std::string get_remote_information(
-            const queue_iterator_type _queue_iterator) const;
+    std::string get_remote_information(const queue_iterator_type _queue_iterator) const;
+    instance_t get_instance(service_t _service) const;
 
 private:
     socket_type socket_;

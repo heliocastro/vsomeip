@@ -25,6 +25,15 @@ find_package(Threads REQUIRED)
 find_package(Boost 1.55 COMPONENTS system thread log regex REQUIRED)
 list(APPEND OS_COMPILER_DEFINITIONS -DBOOST_LOG_DYN_LINK)
 
+# lib-secoc
+find_library(ARA_SECOC_LIBRARY ara_secoc)
+if(NOT ARA_SECOC_LIBRARY)
+    message(FATAL_ERROR "ara_secoc library not found")
+endif()
+
+# mbedTLS
+find_package(MBEDTLS REQUIRED)
+
 # DLT
 find_package(PkgConfig)
 pkg_check_modules(DLT "automotive-dlt >= 2.11")
